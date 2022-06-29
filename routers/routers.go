@@ -1,11 +1,12 @@
 package routers
 
 import (
+	"database/sql"
+
 	"github.com/gorilla/mux"
 )
 
-func InitRouter(r *mux.Router) {
-	InitStudentRouter(r)
-	// r.Handle("/student", studentRouter)
-	// fmt.Println((studentRouter))
+func InitRouter(r *mux.Router, db *sql.DB) {
+	InitStudentRouter(r, db)
+
 }
