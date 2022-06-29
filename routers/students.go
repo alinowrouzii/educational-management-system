@@ -15,7 +15,7 @@ func InitStudentRouter(r *mux.Router, db *sql.DB) {
 	}
 
 	// studentRouter := mux.NewRouter()
-	r.PathPrefix("/student").Subrouter().HandleFunc("/student/test", cfg.TestHandler).Methods("GET")
-	r.PathPrefix("/student").Subrouter().HandleFunc("/student", cfg.GetStudentHandler).Methods("GET")
-
+	r.PathPrefix("/student").Subrouter().HandleFunc("/test", cfg.TestHandler).Methods("GET")
+	r.PathPrefix("/student").Subrouter().HandleFunc("/", cfg.CreateStudentHandler).Methods("POST")
+	r.PathPrefix("/student").Subrouter().HandleFunc("/{studentName}", cfg.GetStudentHandler).Methods("GET")
 }

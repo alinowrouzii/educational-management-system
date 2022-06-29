@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/alinowrouzii/educational-management-system/routers"
 	"github.com/gorilla/mux"
@@ -34,6 +35,6 @@ func (a *App) Initialize(user, password, dbname string) {
 }
 
 func (a *App) Run(addr string) {
-	MakeMigrations(a.DB)
-	// log.Fatal(http.ListenAndServe(":8010", a.Router))
+	// MakeMigrations(a.DB)
+	log.Fatal(http.ListenAndServe(":8010", a.Router))
 }

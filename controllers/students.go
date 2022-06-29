@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/alinowrouzii/educational-management-system/models"
@@ -21,14 +22,32 @@ func (cfg *Config) TestHandler(w http.ResponseWriter, _ *http.Request) {
 	})
 }
 
+func (cfg *Config) CreateStudentHandler(w http.ResponseWriter, r *http.Request) {
+
+	var s models.Student
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&s); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	defer r.Body.Close()
+
+	if err := s.CreateStudent(cfg.DB); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondWithJSON(w, http.StatusCreated, s)
+}
+
 func (cfg *Config) GetStudentHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-	studentName, ok := vars["name"]
+	studentName, ok := vars["studentName"]
 	if !ok {
 		respondWithError(w, http.StatusBadRequest, "name is required")
 		return
 	}
+	log.Println("student name is", studentName)
 
 	student := models.Student{Name: studentName}
 	if err := student.GetStudentByName(cfg.DB); err != nil {
