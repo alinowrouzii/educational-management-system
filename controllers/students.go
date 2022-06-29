@@ -7,9 +7,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
+
 	"github.com/alinowrouzii/educational-management-system/models"
 	"github.com/gorilla/mux"
 )
+
+var Validator = validator.New()
 
 type testStruct struct {
 	Test string `json:"test"`
@@ -30,6 +34,11 @@ func (cfg *Config) CreateStudentHandler(w http.ResponseWriter, r *http.Request) 
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
+	if err := Validator.Struct(s); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	defer r.Body.Close()
 
 	if err := s.CreateStudent(cfg.DB); err != nil {
@@ -49,7 +58,7 @@ func (cfg *Config) GetStudentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("student name is", studentName)
 
-	student := models.Student{Name: studentName}
+	student := models.Student{Name: &studentName}
 	if err := student.GetStudentByName(cfg.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:

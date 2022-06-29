@@ -5,7 +5,8 @@ import (
 	"log"
 )
 
-var createStudent = "CREATE TABLE students ( name VARCHAR(20), last_name VARCHAR(40) )"
+var createStudent = "CREATE TABLE students ( name VARCHAR(20) NOT NULL, last_name VARCHAR(40) NOT NULL )"
+var dropStudent = "DROP TABLE students"
 
 func MakeMigrations(db *sql.DB) {
 	execs := []struct {
@@ -13,6 +14,7 @@ func MakeMigrations(db *sql.DB) {
 		shouldFail bool
 	}{
 		{stmt: createStudent},
+		// {stmt: dropStudent},
 	}
 	for _, exec := range execs {
 		_, err := db.Exec(exec.stmt)
