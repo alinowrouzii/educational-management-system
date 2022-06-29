@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"go.lintTool": "revive",
+		
+		"go.lintFlags": [
+			"--disable-all",
+			"--enable=golint",
+			"--config=~/.gometalinter"
+		]
+	}
+}
