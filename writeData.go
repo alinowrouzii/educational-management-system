@@ -9,23 +9,10 @@ import (
 	"os"
 )
 
-// CREATE TABLE student (
-// 	national_code CHAR(10),
-// 	student_no CHAR(7),
-// 	full_name_fa VARCHAR(40) NOT NULL,
-// 	full_name_en VARCHAR(40) NOT NULL,
-// 	father_name VARCHAR(40) NOT NULL,
-// 	birth_date VARCHAR(40) NOT NULL,
-// 	mobile CHAR(10),
-// 	major VARCHAR(10) NOT NULL,
-// 	password VARCHAR(512),
-// 	email VARCHAR(64),
-// 	PRIMARY KEY (student_no),
-// 	UNIQUE(national_code),
-// 	UNIQUE(student_no)
-// )
-
 var insertIntoStudents = `INSERT INTO student(national_code, student_no, full_name_fa, full_name_en, father_name, birth_date, mobile, major) VALUES `
+var insertIntoProfessors = `INSERT INTO professor(national_code, professor_no, full_name_fa, full_name_en, father_name, birth_date, mobile, department, title) VALUES `
+var insertIntoCourses = `INSERT INTO course(course_id, course_name, professor_no) VALUES `
+var insertIntoCourseTakes = `INSERT INTO course_takes(student_no, course_id) VALUES `
 
 func readJsonData() map[string]interface{} {
 	// Open our jsonFile
@@ -84,10 +71,95 @@ func writeStudentsData(data interface{}, db *sql.DB) {
 	}
 	fmt.Println("result after inserting student", res)
 }
+func writeProfessorsData(data interface{}, db *sql.DB) {
+
+	professors := data.([]interface{})
+	vals := []interface{}{}
+
+	for _, p := range professors {
+		professor := p.(map[string]interface{})
+		national_code := professor["national_code"].(string)
+		professor_no := professor["professor_no"].(string)
+		name_fa := professor["name_fa"].(string)
+		name_en := professor["name_en"].(string)
+		father_name := professor["father_name"].(string)
+		birth_date := professor["birth_date"].(string)
+		mobile := professor["mobile"].(string)
+		department := professor["department"].(string)
+		title := professor["title"].(string)
+
+		insertIntoProfessors += " (?, ?, ?, ?, ?, ?, ?, ?, ?),"
+		vals = append(vals, national_code, professor_no, name_fa, name_en, father_name, birth_date, mobile, department, title)
+	}
+	// trim last colon
+	insertIntoProfessors = insertIntoProfessors[0 : len(insertIntoProfessors)-1]
+
+	stmt, _ := db.Prepare(insertIntoProfessors)
+
+	res, err := stmt.Exec(vals...)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println("result after inserting professors", res)
+}
+
+func writeCoursesData(data interface{}, db *sql.DB) {
+
+	courses := data.([]interface{})
+	vals := []interface{}{}
+
+	for _, c := range courses {
+		course := c.(map[string]interface{})
+		course_id := course["id"].(string)
+		course_name := course["name"].(string)
+		professor_no := course["professor_no"].(string)
+
+		insertIntoCourses += " (?, ?, ?),"
+		vals = append(vals, course_id, course_name, professor_no)
+	}
+	// trim last colon
+	insertIntoCourses = insertIntoCourses[0 : len(insertIntoCourses)-1]
+
+	stmt, _ := db.Prepare(insertIntoCourses)
+
+	res, err := stmt.Exec(vals...)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println("result after inserting courses", res)
+}
+
+func writeCourseTakesData(data interface{}, db *sql.DB) {
+
+	takes := data.([]interface{})
+	vals := []interface{}{}
+
+	for _, t := range takes {
+		studentTakes := t.(map[string]interface{})
+		student_no := studentTakes["student_no"].(string)
+		course_id := studentTakes["course_id"].(string)
+
+		insertIntoCourseTakes += " (?, ?),"
+		vals = append(vals, student_no, course_id)
+	}
+	// trim last colon
+	insertIntoCourseTakes = insertIntoCourseTakes[0 : len(insertIntoCourseTakes)-1]
+
+	stmt, _ := db.Prepare(insertIntoCourseTakes)
+
+	res, err := stmt.Exec(vals...)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println("result after inserting course_takes", res)
+}
 
 func WriteDataToDatabsae(db *sql.DB) {
 	data := readJsonData()
 	// fmt.Println(data["students"])
 	writeStudentsData(data["students"], db)
+	writeProfessorsData(data["faculty"], db)
+	writeCoursesData(data["courses"], db)
+	writeCourseTakesData(data["classrooms"], db)
 
 }

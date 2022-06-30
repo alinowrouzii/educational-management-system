@@ -19,69 +19,89 @@ var createStudent = `
 		password VARCHAR(512),
 		email VARCHAR(64),
 		PRIMARY KEY (student_no),
-		UNIQUE(national_code),
-		UNIQUE(student_no)
+		UNIQUE(national_code)
 	)
 `
 var dropStudent = `DROP TABLE student`
 
-var studentTraggerBeforeSave = `
+// this trigger create email for user and also set default hashed password for user that starts with national_code + first_char of his first_name in capital form + first_char of last_name in lower form
+var studentTriggerBeforeSave = `
 	CREATE TRIGGER set_student_password_email BEFORE INSERT
 	ON student
 	FOR EACH ROW
 	BEGIN
-		SET NEW.email = 
+		DECLARE full_name_en VARCHAR(40);
+		DECLARE _password VARCHAR(512);
+		SET full_name_en := REPLACE(LOWER(NEW.full_name_en), " ", "");
+		SET _password := CONCAT(NEW.national_code, UPPER(SUBSTRING(full_name_en, 1, 1)), LOWER(SUBSTRING(full_name_en, POSITION("-" IN full_name_en)+1, 1)));
+		SET NEW.email = CONCAT(SUBSTRING(full_name_en, 1, 1), ".", SUBSTRING(full_name_en, POSITION("-" IN full_name_en)+1), "@aut.ac.ir");
+		SET NEW.password = MD5(_password);
 	END
 `
+
 var dropStudentTrigger = `DROP TRIGGER set_student_password_email`
 
 // ***************END of student TABLE*********************
 
-var createMaster = `
-	CREATE TABLE master (
-		national_id CHAR(10),
-		full_name VARCHAR(40) NOT NULL,
-		personnel_code VARCHAR(10) NOT NULL,
-		academic_level ENUM('assistant', 'associate'),
-		PRIMARY KEY (personnel_code)
+// ***************professor TABLE*******************************
+var createProfessor = `
+	CREATE TABLE professor (
+		national_code CHAR(10),
+		professor_no CHAR(5),
+		full_name_fa VARCHAR(40) NOT NULL,
+		full_name_en VARCHAR(40) NOT NULL,
+		father_name VARCHAR(40) NOT NULL,
+		birth_date VARCHAR(40) NOT NULL,
+		mobile CHAR(11),
+		department VARCHAR(64) NOT NULL,
+		title ENUM("استاد", "استادیار", "دانش‌یار") NOT NULL,
+		password VARCHAR(512),
+		email VARCHAR(64),
+		PRIMARY KEY (professor_no),
+		UNIQUE(national_code)
 	)
 `
-var dropMaster = `DROP TABLE master`
+var dropProfessor = `DROP TABLE professor`
 
+// this trigger create email for user and also set default hashed password for user that starts with national_code + first_char of his first_name in capital form + first_char of last_name in lower form
+var professorTriggerBeforeSave = `
+	CREATE TRIGGER set_professor_password_email BEFORE INSERT
+	ON professor
+	FOR EACH ROW
+	BEGIN
+		DECLARE full_name_en VARCHAR(40);
+		DECLARE _password VARCHAR(512);
+		SET full_name_en := REPLACE(LOWER(NEW.full_name_en), " ", "");
+		SET _password := CONCAT(NEW.national_code, UPPER(SUBSTRING(full_name_en, 1, 1)), LOWER(SUBSTRING(full_name_en, POSITION("-" IN full_name_en)+1, 1)));
+		SET NEW.email = CONCAT(SUBSTRING(full_name_en, 1, 1), ".", SUBSTRING(full_name_en, POSITION("-" IN full_name_en)+1), "@aut.ac.ir");
+		SET NEW.password = MD5(_password);
+	END
+`
+var dropProfessorTrigger = `DROP TRIGGER set_professor_password_email`
+
+// **************End of professor TABLE****************
+
+// **************course TABLE**************************
 var createCourse = `
 	CREATE TABLE course (
-		name VARCHAR(20),
-		unit int UNSIGNED NOT NULL,
-		code int NOT NULL,
-		PRIMARY KEY(code)
+		course_id CHAR(8),
+		course_name VARCHAR(64),
+		professor_no CHAR(5) NOT NULL,
+		PRIMARY KEY(course_id),
+		FOREIGN KEY(professor_no) REFERENCES professor(professor_no)
 	)
 `
 var dropCourse = `DROP TABLE course`
 
-var createSection = `
-	CREATE TABLE section(
-		master_id VARCHAR(10) NOT NULL,
-		course_code int NOT NULL,
-		group_number VARCHAR(4) NOT NULL,
-		year CHAR(4) NOT NULL,
-		semester ENUM('FALL', 'SPRING'),
-		PRIMARY KEY(course_code, group_number, year, semester),
-		FOREIGN KEY(master_id) REFERENCES master(personnel_code),
-		FOREIGN KEY(course_code) REFERENCES course(code)
-	)
-`
-var dropSection = `DROP TABLE section`
+// **************end of course TABLE**************************
 
 var createCourseTakes = `
 	CREATE TABLE course_takes(
-		student_id CHAR(7),
-		course_code int,
-		group_number VARCHAR(4),
-		year CHAR(4),
-		semester ENUM('FALL', 'SPRING'),
-		PRIMARY KEY(student_id, course_code, group_number, year, semester),
-		FOREIGN KEY(course_code, group_number, year, semester) REFERENCES section(course_code, group_number, year, semester),
-		FOREIGN KEY(student_id) REFERENCES student(student_id)
+		student_no CHAR(7),
+		course_id CHAR(8),
+		PRIMARY KEY(student_no, course_id),
+		FOREIGN KEY(course_id) REFERENCES course(course_id),
+		FOREIGN KEY(student_no) REFERENCES student(student_no)
 	)
 `
 var dropCourseTakes = `DROP YABLE course_takes`
@@ -197,15 +217,19 @@ var execs = []struct {
 		shouldFail: false,
 	},
 	{
-		stmt:       createMaster,
+		stmt:       studentTriggerBeforeSave,
+		shouldFail: false,
+	},
+	{
+		stmt:       createProfessor,
+		shouldFail: false,
+	},
+	{
+		stmt:       professorTriggerBeforeSave,
 		shouldFail: false,
 	},
 	{
 		stmt:       createCourse,
-		shouldFail: false,
-	},
-	{
-		stmt:       createSection,
 		shouldFail: false,
 	},
 	{
@@ -245,7 +269,7 @@ var execs = []struct {
 	// 	shouldFail: false,
 	// },
 	// {
-	// 	stmt:       dropMaster,
+	// 	stmt:       dropProfessor,
 	// 	shouldFail: false,
 	// },
 	// {
