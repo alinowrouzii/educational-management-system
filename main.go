@@ -5,6 +5,7 @@ package main
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -26,6 +27,12 @@ func main() {
 		os.Getenv("APP_DB_USERNAME"),
 		os.Getenv("APP_DB_PASSWORD"),
 		os.Getenv("APP_DB_NAME"))
+	wantsToMigrate := os.Getenv("WANTS_TO_MIGRATE")
 
-	a.Run(":8010")
+	wantsToMigrateBool, err := strconv.ParseBool(wantsToMigrate)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	a.Run(":8010", wantsToMigrateBool)
 }

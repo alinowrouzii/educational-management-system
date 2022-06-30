@@ -17,24 +17,22 @@ type App struct {
 }
 
 func (a *App) Initialize(user, password, dbname string) {
-	fmt.Println("here")
 	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", user, password, dbname)
 
-	fmt.Println((connectionString))
 	var err error
 	a.DB, err = sql.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("here is err", err)
-	fmt.Println(a.DB)
-
 	a.Router = mux.NewRouter()
 	routers.InitRouter(a.Router, a.DB)
 }
 
-func (a *App) Run(addr string) {
-	// MakeMigrations(a.DB)
-	log.Fatal(http.ListenAndServe(":8010", a.Router))
+func (a *App) Run(addr string, wantsToMigrate bool) {
+	if wantsToMigrate {
+		MakeMigrations(a.DB)
+	} else {
+		log.Fatal(http.ListenAndServe(addr, a.Router))
+	}
 }
