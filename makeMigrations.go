@@ -176,15 +176,7 @@ var execs = []struct {
 		shouldFail: false,
 	},
 	{
-		stmt:       dropStudent,
-		shouldFail: false,
-	},
-	{
 		stmt:       createMaster,
-		shouldFail: false,
-	},
-	{
-		stmt:       dropMaster,
 		shouldFail: false,
 	},
 	{
@@ -192,15 +184,7 @@ var execs = []struct {
 		shouldFail: false,
 	},
 	{
-		stmt:       dropCourse,
-		shouldFail: false,
-	},
-	{
 		stmt:       createSection,
-		shouldFail: false,
-	},
-	{
-		stmt:       dropSection,
 		shouldFail: false,
 	},
 	{
@@ -208,15 +192,7 @@ var execs = []struct {
 		shouldFail: false,
 	},
 	{
-		stmt:       dropCourseTakes,
-		shouldFail: false,
-	},
-	{
 		stmt:       createExam,
-		shouldFail: false,
-	},
-	{
-		stmt:       dropExam,
 		shouldFail: false,
 	},
 	{
@@ -224,15 +200,7 @@ var execs = []struct {
 		shouldFail: false,
 	},
 	{
-		stmt:       dropTestQuestion,
-		shouldFail: false,
-	},
-	{
 		stmt:       createShortQuestion,
-		shouldFail: false,
-	},
-	{
-		stmt:       dropShortQuestion,
 		shouldFail: false,
 	},
 	{
@@ -240,15 +208,7 @@ var execs = []struct {
 		shouldFail: false,
 	},
 	{
-		stmt:       dropTestAnswer,
-		shouldFail: false,
-	},
-	{
 		stmt:       createShortAnswer,
-		shouldFail: false,
-	},
-	{
-		stmt:       dropShortAnswer,
 		shouldFail: false,
 	},
 	{
@@ -256,17 +216,57 @@ var execs = []struct {
 		shouldFail: false,
 	},
 	{
-		stmt:       dropHomework,
-		shouldFail: false,
-	},
-	{
 		stmt:       createHomeworkParticipation,
 		shouldFail: false,
 	},
-	{
-		stmt:       dropHomeworkParticipation,
-		shouldFail: false,
-	},
+	// {
+	// 	stmt:       dropStudent,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropMaster,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropCourse,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropSection,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropCourseTakes,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropExam,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropTestQuestion,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropShortQuestion,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropTestAnswer,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropShortAnswer,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropHomework,
+	// 	shouldFail: false,
+	// },
+	// {
+	// 	stmt:       dropHomeworkParticipation,
+	// 	shouldFail: false,
+	// },
 }
 
 func MakeMigrations(db *sql.DB) {
