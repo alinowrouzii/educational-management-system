@@ -29,9 +29,11 @@ func (a *App) Initialize(user, password, dbname string) {
 	routers.InitRouter(a.Router, a.DB)
 }
 
-func (a *App) Run(addr string, wantsToMigrate bool) {
+func (a *App) Run(addr string, wantsToMigrate bool, wantsToWriteData bool) {
 	if wantsToMigrate {
 		MakeMigrations(a.DB)
+	} else if wantsToWriteData {
+		WriteDataToDatabsae(a.DB)
 	} else {
 		log.Fatal(http.ListenAndServe(addr, a.Router))
 	}

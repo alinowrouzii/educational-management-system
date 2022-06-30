@@ -28,11 +28,17 @@ func main() {
 		os.Getenv("APP_DB_PASSWORD"),
 		os.Getenv("APP_DB_NAME"))
 	wantsToMigrate := os.Getenv("WANTS_TO_MIGRATE")
+	wantsToWriteData := os.Getenv("WANTS_TO_WRITE_DATA")
 
 	wantsToMigrateBool, err := strconv.ParseBool(wantsToMigrate)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	a.Run(":8010", wantsToMigrateBool)
+	wantsToWriteDataBool, err := strconv.ParseBool(wantsToWriteData)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	a.Run(":8010", wantsToMigrateBool, wantsToWriteDataBool)
 }

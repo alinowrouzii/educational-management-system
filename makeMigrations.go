@@ -7,11 +7,19 @@ import (
 
 var createStudent = `
 	CREATE TABLE student (
-		national_id CHAR(10),
-		full_name VARCHAR(40) NOT NULL,
-		student_id CHAR(7),
-		register_year CHAR(4),
-		PRIMARY KEY (student_id)
+		national_code CHAR(10),
+		student_no CHAR(7),
+		full_name_fa VARCHAR(40) NOT NULL,
+		full_name_en VARCHAR(40) NOT NULL,
+		father_name VARCHAR(40) NOT NULL,
+		birth_date VARCHAR(40) NOT NULL,
+		mobile CHAR(10),
+		major VARCHAR(10) NOT NULL,
+		password VARCHAR(512),
+		email VARCHAR(64),
+		PRIMARY KEY (student_no),
+		UNIQUE(national_code),
+		UNIQUE(student_no)
 	)
 `
 var dropStudent = `DROP TABLE student`
