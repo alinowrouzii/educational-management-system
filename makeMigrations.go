@@ -41,6 +41,30 @@ var studentTriggerBeforeSave = `
 
 var dropStudentTrigger = `DROP TRIGGER set_student_password_email`
 
+var createStudentChangePasswordFunc = `
+	CREATE FUNCTION change_student_password ( student_no VARCHAR(7) , student_password VARCHAR(512), student_new_password VARCHAR(512) )
+	RETURNS INT DETERMINISTIC
+
+	BEGIN
+
+	DECLARE user_old_password VARCHAR(512);
+	DECLARE user_new_password VARCHAR(512);
+	DECLARE AFFECTED_ROWS int DEFAULT 0;
+
+	SET user_old_password := MD5(student_password);
+	SET user_new_password := MD5(student_new_password);
+
+	UPDATE student
+	SET student.password = user_new_password
+	WHERE student.student_no = student_no AND student.password = user_old_password;
+
+	SELECT ROW_COUNT() into AFFECTED_ROWS;
+
+	RETURN AFFECTED_ROWS;
+
+END;
+`
+
 // ***************END of student TABLE*********************
 
 // ***************professor TABLE*******************************
@@ -218,6 +242,10 @@ var execs = []struct {
 	},
 	{
 		stmt:       studentTriggerBeforeSave,
+		shouldFail: false,
+	},
+	{
+		stmt:       createStudentChangePasswordFunc,
 		shouldFail: false,
 	},
 	{
