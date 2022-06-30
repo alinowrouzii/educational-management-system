@@ -25,7 +25,7 @@ import (
 // 	UNIQUE(student_no)
 // )
 
-var insertIntoStudents = `INSERT INTO student(national_code, student_no, full_name_fa, full_name_en, father_name, birth_date, mobile, major) `
+var insertIntoStudents = `INSERT INTO student(national_code, student_no, full_name_fa, full_name_en, father_name, birth_date, mobile, major) VALUES `
 
 func readJsonData() map[string]interface{} {
 	// Open our jsonFile
@@ -78,8 +78,10 @@ func writeStudentsData(data interface{}, db *sql.DB) {
 
 	stmt, _ := db.Prepare(insertIntoStudents)
 
-	res, _ := stmt.Exec(vals...)
-
+	res, err := stmt.Exec(vals...)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	fmt.Println("result after inserting student", res)
 }
 

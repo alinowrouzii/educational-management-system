@@ -5,6 +5,7 @@ import (
 	"log"
 )
 
+// ***************Student TABLE***************
 var createStudent = `
 	CREATE TABLE student (
 		national_code CHAR(10),
@@ -13,8 +14,8 @@ var createStudent = `
 		full_name_en VARCHAR(40) NOT NULL,
 		father_name VARCHAR(40) NOT NULL,
 		birth_date VARCHAR(40) NOT NULL,
-		mobile CHAR(10),
-		major VARCHAR(10) NOT NULL,
+		mobile CHAR(11),
+		major VARCHAR(64) NOT NULL,
 		password VARCHAR(512),
 		email VARCHAR(64),
 		PRIMARY KEY (student_no),
@@ -23,6 +24,18 @@ var createStudent = `
 	)
 `
 var dropStudent = `DROP TABLE student`
+
+var studentTraggerBeforeSave = `
+	CREATE TRIGGER set_student_password_email BEFORE INSERT
+	ON student
+	FOR EACH ROW
+	BEGIN
+		SET NEW.email = 
+	END
+`
+var dropStudentTrigger = `DROP TRIGGER set_student_password_email`
+
+// ***************END of student TABLE*********************
 
 var createMaster = `
 	CREATE TABLE master (

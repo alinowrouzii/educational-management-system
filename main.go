@@ -23,14 +23,10 @@ func main() {
 	}
 
 	a := App{}
-	a.Initialize(
-		os.Getenv("APP_DB_USERNAME"),
-		os.Getenv("APP_DB_PASSWORD"),
-		os.Getenv("APP_DB_NAME"))
-	wantsToMigrate := os.Getenv("WANTS_TO_MIGRATE")
+	wantsToDropDatabase := os.Getenv("WANTS_TO_DROP_DATABASE")
 	wantsToWriteData := os.Getenv("WANTS_TO_WRITE_DATA")
 
-	wantsToMigrateBool, err := strconv.ParseBool(wantsToMigrate)
+	wantsToDropDatabaseBool, err := strconv.ParseBool(wantsToDropDatabase)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,5 +36,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	a.Run(":8010", wantsToMigrateBool, wantsToWriteDataBool)
+	a.wantsToDropDatabase = wantsToDropDatabaseBool
+
+	a.Initialize(
+		os.Getenv("APP_DB_USERNAME"),
+		os.Getenv("APP_DB_PASSWORD"),
+		os.Getenv("APP_DB_NAME"))
+
+	a.Run(":8010", wantsToWriteDataBool)
 }
