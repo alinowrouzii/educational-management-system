@@ -22,6 +22,34 @@ var createTokenTable = `
 
 // ****************END of token table********************************
 
+// ****************User login function*******************************
+var loginUserFunc = `
+	CREATE FUNCTION login_user ( username VARCHAR(7) , user_password VARCHAR(512) )
+	RETURNS int DETERMINISTIC
+
+	BEGIN
+
+		DECLARE user_hashed_password VARCHAR(512);
+		DECLARE LOGIN_STATUS int DEFAULT 0;
+
+		SET user_hashed_password := MD5(user_password);
+
+		SELECT count(*) INTO LOGIN_STATUS
+		FROM student 
+		WHERE student.student_no=username AND student.password=user_hashed_password;
+
+		IF LOGIN_STATUS=0 THEN
+			SELECT count(*) INTO LOGIN_STATUS
+			FROM professor 
+			WHERE professor.professor_no=username AND professor.password=user_hashed_password;
+		END IF;
+
+		RETURN LOGIN_STATUS;
+	END;
+`
+
+// ****************End of User login function************************
+
 // ***************Student TABLE***************
 var createStudent = `
 	CREATE TABLE student (
@@ -279,6 +307,10 @@ var execs = []struct {
 	},
 	{
 		stmt:       createStudentChangePasswordFunc,
+		shouldFail: false,
+	},
+	{
+		stmt:       loginUserFunc,
 		shouldFail: false,
 	},
 	{
