@@ -4,14 +4,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/alinowrouzii/educational-management-system/token"
 )
 
 var insertNewToken = "INSERT into token (id, username, issue_at, expired_at) VALUES (?, ?, ?, ?)"
-var loginUser = "SELECT login_user(username, password) as shit"
+var loginUser = "SELECT login_user(?, ?)"
 
 type UserLogin struct {
 	Username string `json:"username" validate:"required"`
@@ -21,14 +20,14 @@ type UserLogin struct {
 func (u *UserLogin) Login(jwt *token.JWTMaker, db *sql.DB) (map[string]interface{}, error) {
 
 	fmt.Println("here is user", u)
-	checkLoginSuccessfull := "FAIL"
+	checkLoginSuccessfull := false
 	err := db.QueryRow(loginUser, u.Username, u.Password).Scan(&checkLoginSuccessfull)
 
 	if err != nil {
-		log.Fatal("Error after login", err)
+		fmt.Println("Error after login ", err)
 	}
 
-	if checkLoginSuccessfull == "FAIL" {
+	if !checkLoginSuccessfull {
 		return nil, errors.New("There is no user with provided credentials")
 	}
 

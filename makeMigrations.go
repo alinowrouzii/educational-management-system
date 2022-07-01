@@ -95,6 +95,12 @@ var createStudentChangePasswordFunc = `
 	DECLARE user_old_password VARCHAR(512);
 	DECLARE user_new_password VARCHAR(512);
 	DECLARE AFFECTED_ROWS int DEFAULT 0;
+	declare ERROR_MESSAGE varchar(128);
+
+	if student_new_password REGEXP '^[0-9]+$' or student_new_password REGEXP '^[A-Za-z]+$'  then
+		set ERROR_MESSAGE = "Password should be alphanumeric";
+		signal sqlstate '45000' set message_text = ERROR_MESSAGE;
+	end if;
 
 	SET user_old_password := MD5(student_password);
 	SET user_new_password := MD5(student_new_password);
@@ -108,6 +114,12 @@ var createStudentChangePasswordFunc = `
 	RETURN AFFECTED_ROWS;
 END;
 `
+
+// declare msg varchar(128);
+// 		if new.password < 0 then
+// 			set msg = concat('MyTriggerError: Trying to insert a negative value in trigger_test: ', cast(new.id as char));
+// 			signal sqlstate '45000' set message_text = msg;
+// 		end if;
 
 // ***************END of student TABLE*********************
 
