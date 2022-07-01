@@ -16,5 +16,6 @@ func InitRouter(r *mux.Router, db *sql.DB, jwt *token.JWTMaker) {
 
 	InitStudentRouter(r, cfg)
 	InitAuthRouter(r, cfg)
+	InitCoursesRouter(r, cfg)
 
 }

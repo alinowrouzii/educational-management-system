@@ -1,8 +1,8 @@
 package models
 
-var createStudent = "INSERT INTO students (name, last_name) VALUES ($1, $2) returning name"
-var getStudentByName = "SELECT name, last_name FROM students WHERE name=$1"
-var updateStudentNameByName = "UPDATE students SET name=$1 WHERE name=$2"
+// var createStudent = "INSERT INTO students (name, last_name) VALUES ($1, $2) returning name"
+// var getStudentByName = "SELECT name, last_name FROM students WHERE name=$1"
+// var updateStudentNameByName = "UPDATE students SET name=$1 WHERE name=$2"
 
 type Student struct {
 	StudentNO   string `json:"student_no" validate:"required"`

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/alinowrouzii/educational-management-system/token"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -14,7 +15,13 @@ type testStruct struct {
 	Test string `json:"test"`
 }
 
-func (cfg *Config) TestHandler(w http.ResponseWriter, _ *http.Request) {
+func (cfg *Config) TestHandler(w http.ResponseWriter, r *http.Request) {
+
+	user := r.Context().Value("payload")
+	fmt.Println("==========")
+	token := user.(*token.Payload)
+	username := token.Username
+	fmt.Println(username)
 
 	RespondWithJSON(w, http.StatusOK, testStruct{
 		Test: "hello world",
@@ -41,30 +48,6 @@ func (cfg *Config) TestHandler(w http.ResponseWriter, _ *http.Request) {
 // 		return
 // 	}
 // 	respondWithJSON(w, http.StatusCreated, s)
-// }
-
-// func (cfg *Config) GetStudentHandler(w http.ResponseWriter, r *http.Request) {
-
-// 	vars := mux.Vars(r)
-// 	studentName, ok := vars["studentName"]
-// 	if !ok {
-// 		RespondWithError(w, http.StatusBadRequest, "name is required")
-// 		return
-// 	}
-// 	log.Println("student name is", studentName)
-
-// 	student := models.Student{Name: &studentName}
-// 	if err := student.GetStudentByName(cfg.DB); err != nil {
-// 		switch err {
-// 		case sql.ErrNoRows:
-// 			RespondWithError(w, http.StatusNotFound, "Student not found")
-// 		default:
-// 			RespondWithError(w, http.StatusInternalServerError, err.Error())
-// 		}
-// 		return
-// 	}
-
-// 	respondWithJSON(w, http.StatusOK, student)
 // }
 
 func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {

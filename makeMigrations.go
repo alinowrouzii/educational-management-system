@@ -6,16 +6,12 @@ import (
 )
 
 // ****************Token table**********************
-// ID        uuid.UUID `json:"id"`
-// 	Username  string    `json:"username"`
-// 	IssuedAt  time.Time `json:"issued_at"`
-// 	ExpiredAt time.Time `json:"expired_at"`
 var createTokenTable = `
 	CREATE TABLE token (
 		id VARCHAR(512) NOT NULL,
 		username VARCHAR(32) NOT NULL,
-		issue_at DATE NOT NULL,
-		expired_at DATE NOT NULL,
+		issue_at DATETIME NOT NULL,
+		expired_at DATETIME NOT NULL,
 		PRIMARY KEY(id)
 	)
 `
