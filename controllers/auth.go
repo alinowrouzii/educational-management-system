@@ -22,11 +22,11 @@ func (cfg *Config) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := user.Login(cfg.JWT)
+	payload, err := user.Login(cfg.JWT, cfg.DB)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	RespondWithJSON(w, http.StatusCreated, map[string]interface{}{"token": token})
+	RespondWithJSON(w, http.StatusCreated, map[string]interface{}{"result": payload})
 }

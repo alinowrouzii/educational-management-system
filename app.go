@@ -47,7 +47,7 @@ func (a *App) connectDB(user, password, dbName string) {
 		fmt.Println("hereee")
 		a.dropAndCreateDatabase(connectionString, dbName)
 	}
-	connectionString += dbName
+	connectionString += dbName + "?parseTime=true"
 
 	dbConn, err := sql.Open("mysql", connectionString)
 	if err != nil {
@@ -70,8 +70,8 @@ func (a *App) Initialize(user, password, dbname, secretKey string) {
 	routers.InitRouter(a.Router, a.DB, a.jwt)
 }
 
-func (a *App) Run(addr string, wantsToWriteData bool) {
-	if a.wantsToDropDatabase {
+func (a *App) Run(addr string, wantsToWriteData, wantsToMakeMigrations bool) {
+	if a.wantsToDropDatabase || wantsToMakeMigrations {
 		MakeMigrations(a.DB)
 	}
 

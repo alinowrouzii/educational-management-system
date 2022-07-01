@@ -10,19 +10,19 @@ import (
 	"github.com/google/uuid"
 )
 
-var checkTokenIsValid = `SELECT * FROM token WHERE token.id=?`
+var checkTokenIsValid = `SELECT id, username, issue_at, expired_at FROM token WHERE token.id=?`
 
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
 	Username  string    `json:"username"`
-	IssuedAt  time.Time `json:"issued_at"`
+	IssuedAt  time.Time `json:"issue_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
 // Maker is an interface for managing tokens
 type Maker interface {
 	// CreateToken creates a new token for a specific username and duration
-	CreateToken(username string, duration time.Duration) (string, error)
+	CreateToken(username string, duration time.Duration) (*Payload, string, error)
 	// VerifyToken checks if the token is valid or not
 	VerifyToken(token string) (*Payload, error)
 }
@@ -52,15 +52,16 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 	return payload, nil
 }
 
-func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (string, error) {
+func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (*Payload, string, error) {
 
 	payload, err := NewPayload(username, duration)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	return jwtToken.SignedString([]byte(maker.secretKey))
+	token, error := jwtToken.SignedString([]byte(maker.secretKey))
+	return payload, token, error
 }
 
 func (payload *Payload) Valid() error {
@@ -95,13 +96,15 @@ func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	}
 
 	// check token in database with sql function
-	exists := false
-	maker.DB.QueryRow(checkTokenIsValid, payload.ID).Scan(&exists)
+	rows := maker.DB.QueryRow(checkTokenIsValid, payload.ID)
+	err = rows.Scan(&payload.ID, &payload.Username, &payload.IssuedAt, &payload.ExpiredAt)
 
-	if exists {
-		return payload, nil
+	fmt.Println("shittttttt ", err, " jj")
+	if err != nil {
+		return nil, errors.New("token not found!!")
 	}
-	return nil, errors.New("token not found!!")
+
+	return payload, nil
 }
 
 func NewJWTMaker(secretKey string, db *sql.DB) (*JWTMaker, error) {

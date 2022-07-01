@@ -282,6 +282,10 @@ var execs = []struct {
 		shouldFail: false,
 	},
 	{
+		stmt:       createTokenTable,
+		shouldFail: false,
+	},
+	{
 		stmt:       createProfessor,
 		shouldFail: false,
 	},

@@ -25,6 +25,7 @@ func main() {
 	a := App{}
 	wantsToDropDatabase := os.Getenv("WANTS_TO_DROP_DATABASE")
 	wantsToWriteData := os.Getenv("WANTS_TO_WRITE_DATA")
+	wantsToMakeMigrations := os.Getenv("WANTS_TO_MAKE_MIGRATIONS")
 
 	wantsToDropDatabaseBool, err := strconv.ParseBool(wantsToDropDatabase)
 	if err != nil {
@@ -32,6 +33,10 @@ func main() {
 	}
 
 	wantsToWriteDataBool, err := strconv.ParseBool(wantsToWriteData)
+	if err != nil {
+		log.Fatal(err)
+	}
+	wantsToMakeMigrationsBool, err := strconv.ParseBool(wantsToMakeMigrations)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,5 +49,5 @@ func main() {
 		os.Getenv("APP_DB_NAME"),
 		os.Getenv("SECRET_KEY"))
 
-	a.Run(":8010", wantsToWriteDataBool)
+	a.Run(":8010", wantsToWriteDataBool, wantsToMakeMigrationsBool)
 }
