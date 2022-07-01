@@ -1,6 +1,7 @@
 package token
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -8,6 +9,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 )
+
+var checkTokenIsValid = `SELECT * FROM token WHERE token.id=?`
 
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
@@ -27,10 +30,11 @@ type Maker interface {
 const minSecretKeySize = 32
 
 var ErrExpiredToken = errors.New("token has expired")
-var ErrInvalidToken = errors.New("token is not valid")
+var ErrInvalidToken = errors.New("token is not validdd")
 
 type JWTMaker struct {
 	secretKey string
+	DB        *sql.DB
 }
 
 func NewPayload(username string, duration time.Duration) (*Payload, error) {
@@ -67,6 +71,7 @@ func (payload *Payload) Valid() error {
 }
 
 func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
+	// fmt.Println("token is:", token)
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
@@ -89,12 +94,19 @@ func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
 		return nil, ErrInvalidToken
 	}
 
-	return payload, nil
+	// check token in database with sql function
+	exists := false
+	maker.DB.QueryRow(checkTokenIsValid, payload.ID).Scan(&exists)
+
+	if exists {
+		return payload, nil
+	}
+	return nil, errors.New("token not found!!")
 }
 
-func NewJWTMaker(secretKey string) (*JWTMaker, error) {
+func NewJWTMaker(secretKey string, db *sql.DB) (*JWTMaker, error) {
 	if len(secretKey) < minSecretKeySize {
 		return nil, fmt.Errorf("invalid key size: must be at least %d characters", minSecretKeySize)
 	}
-	return &JWTMaker{secretKey}, nil
+	return &JWTMaker{secretKey, db}, nil
 }

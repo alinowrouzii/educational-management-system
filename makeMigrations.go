@@ -5,6 +5,23 @@ import (
 	"log"
 )
 
+// ****************Token table**********************
+// ID        uuid.UUID `json:"id"`
+// 	Username  string    `json:"username"`
+// 	IssuedAt  time.Time `json:"issued_at"`
+// 	ExpiredAt time.Time `json:"expired_at"`
+var createTokenTable = `
+	CREATE TABLE token (
+		id VARCHAR(512) NOT NULL,
+		username VARCHAR(32) NOT NULL,
+		issue_at DATE NOT NULL,
+		expired_at DATE NOT NULL,
+		PRIMARY KEY(id)
+	)
+`
+
+// ****************END of token table********************************
+
 // ***************Student TABLE***************
 var createStudent = `
 	CREATE TABLE student (
@@ -61,7 +78,6 @@ var createStudentChangePasswordFunc = `
 	SELECT ROW_COUNT() into AFFECTED_ROWS;
 
 	RETURN AFFECTED_ROWS;
-
 END;
 `
 
@@ -86,6 +102,23 @@ var createProfessor = `
 	)
 `
 var dropProfessor = `DROP TABLE professor`
+
+var createProfessorChangePassword = `
+	CREATE FUNCTION change_professor_password ( professor_no CHAR(5) , professor_password VARCHAR(512), professor_new_password VARCHAR(512) )
+	RETURNS INT DETERMINISTIC
+	BEGIN
+		DECLARE user_old_password VARCHAR(512);
+		DECLARE user_new_password VARCHAR(512);
+		DECLARE AFFECTED_ROWS int DEFAULT 0;
+		SET user_old_password := MD5(professor_password);
+		SET user_new_password := MD5(professor_new_password);
+		UPDATE professor
+		SET professor.password = user_new_password
+		WHERE professor.professor_no = professor_no AND professor.password = user_old_password;
+		SELECT ROW_COUNT() into AFFECTED_ROWS;
+		RETURN AFFECTED_ROWS;
+	END;
+`
 
 // this trigger create email for user and also set default hashed password for user that starts with national_code + first_char of his first_name in capital form + first_char of last_name in lower form
 var professorTriggerBeforeSave = `

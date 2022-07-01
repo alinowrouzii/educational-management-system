@@ -17,7 +17,7 @@ type testStruct struct {
 
 func (cfg *Config) TestHandler(w http.ResponseWriter, _ *http.Request) {
 
-	respondWithJSON(w, http.StatusOK, testStruct{
+	RespondWithJSON(w, http.StatusOK, testStruct{
 		Test: "hello world",
 	})
 }
@@ -27,18 +27,18 @@ func (cfg *Config) TestHandler(w http.ResponseWriter, _ *http.Request) {
 // 	var s models.Student
 // 	decoder := json.NewDecoder(r.Body)
 // 	if err := decoder.Decode(&s); err != nil {
-// 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+// 		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
 // 		return
 // 	}
 // 	if err := Validator.Struct(s); err != nil {
-// 		respondWithError(w, http.StatusInternalServerError, err.Error())
+// 		RespondWithError(w, http.StatusInternalServerError, err.Error())
 // 		return
 // 	}
 
 // 	defer r.Body.Close()
 
 // 	if err := s.CreateStudent(cfg.DB); err != nil {
-// 		respondWithError(w, http.StatusInternalServerError, err.Error())
+// 		RespondWithError(w, http.StatusInternalServerError, err.Error())
 // 		return
 // 	}
 // 	respondWithJSON(w, http.StatusCreated, s)
@@ -49,7 +49,7 @@ func (cfg *Config) TestHandler(w http.ResponseWriter, _ *http.Request) {
 // 	vars := mux.Vars(r)
 // 	studentName, ok := vars["studentName"]
 // 	if !ok {
-// 		respondWithError(w, http.StatusBadRequest, "name is required")
+// 		RespondWithError(w, http.StatusBadRequest, "name is required")
 // 		return
 // 	}
 // 	log.Println("student name is", studentName)
@@ -58,9 +58,9 @@ func (cfg *Config) TestHandler(w http.ResponseWriter, _ *http.Request) {
 // 	if err := student.GetStudentByName(cfg.DB); err != nil {
 // 		switch err {
 // 		case sql.ErrNoRows:
-// 			respondWithError(w, http.StatusNotFound, "Student not found")
+// 			RespondWithError(w, http.StatusNotFound, "Student not found")
 // 		default:
-// 			respondWithError(w, http.StatusInternalServerError, err.Error())
+// 			RespondWithError(w, http.StatusInternalServerError, err.Error())
 // 		}
 // 		return
 // 	}
@@ -72,24 +72,24 @@ func (cfg *Config) ChangeStudentPasswordHandler(w http.ResponseWriter, r *http.R
 	var s models.Student
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&s); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 	if err := Validator.Struct(s); err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	defer r.Body.Close()
 
 	if err := s.ChangeStudentPassword(cfg.DB); err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondWithJSON(w, http.StatusCreated, s)
+	RespondWithJSON(w, http.StatusCreated, s)
 }
 
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	fmt.Println(payload)
 	response, _ := json.Marshal(payload)
 	// fmt.Println(response)
@@ -99,6 +99,6 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
-func respondWithError(w http.ResponseWriter, code int, message string) {
-	respondWithJSON(w, code, map[string]string{"error": message})
+func RespondWithError(w http.ResponseWriter, code int, message string) {
+	RespondWithJSON(w, code, map[string]string{"error": message})
 }

@@ -60,7 +60,7 @@ func (a *App) Initialize(user, password, dbname, secretKey string) {
 	a.connectDB(user, password, dbname)
 
 	var err error
-	a.jwt, err = token.NewJWTMaker(secretKey)
+	a.jwt, err = token.NewJWTMaker(secretKey, a.DB)
 	if err != nil {
 		log.Fatal("error occured in jwt initialization")
 		log.Fatal(err)
