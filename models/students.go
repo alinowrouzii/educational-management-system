@@ -4,8 +4,6 @@ var createStudent = "INSERT INTO students (name, last_name) VALUES ($1, $2) retu
 var getStudentByName = "SELECT name, last_name FROM students WHERE name=$1"
 var updateStudentNameByName = "UPDATE students SET name=$1 WHERE name=$2"
 
-var changeStudentPassword = `SELECT change_student_password(?, ?, ?) as shit`
-
 type Student struct {
 	StudentNO   string `json:"student_no" validate:"required"`
 	Password    string `json:"password" validate:"required"`
