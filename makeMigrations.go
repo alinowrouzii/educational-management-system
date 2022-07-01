@@ -102,6 +102,16 @@ var createStudentChangePasswordFunc = `
 		signal sqlstate '45000' set message_text = ERROR_MESSAGE;
 	end if;
 
+	if LENGTH(student_new_password) < 3 THEN
+		set ERROR_MESSAGE = "Password is too short";
+		signal sqlstate '45000' set message_text = ERROR_MESSAGE;
+	END IF;
+
+	if LENGTH(student_new_password) > 20 THEN
+		set ERROR_MESSAGE = "Password is too long";
+		signal sqlstate '45000' set message_text = ERROR_MESSAGE;
+	END IF;
+
 	SET user_old_password := MD5(student_password);
 	SET user_new_password := MD5(student_new_password);
 
