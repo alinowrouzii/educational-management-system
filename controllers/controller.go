@@ -1,7 +1,12 @@
 package controllers
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"github.com/alinowrouzii/educational-management-system/token"
+)
 
 type Config struct {
-	DB *sql.DB
+	DB  *sql.DB
+	JWT *token.JWTMaker
 }

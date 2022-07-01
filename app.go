@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/alinowrouzii/educational-management-system/routers"
+	"github.com/alinowrouzii/educational-management-system/token"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
@@ -15,6 +16,7 @@ type App struct {
 	Router              *mux.Router
 	DB                  *sql.DB
 	wantsToDropDatabase bool
+	jwt                 *token.JWTMaker
 }
 
 func (a *App) dropAndCreateDatabase(connectionString, dbName string) {
@@ -54,11 +56,18 @@ func (a *App) connectDB(user, password, dbName string) {
 	a.DB = dbConn
 }
 
-func (a *App) Initialize(user, password, dbname string) {
+func (a *App) Initialize(user, password, dbname, secretKey string) {
 	a.connectDB(user, password, dbname)
 
+	var err error
+	a.jwt, err = token.NewJWTMaker(secretKey)
+	if err != nil {
+		log.Fatal("error occured in jwt initialization")
+		log.Fatal(err)
+	}
+
 	a.Router = mux.NewRouter()
-	routers.InitRouter(a.Router, a.DB)
+	routers.InitRouter(a.Router, a.DB, a.jwt)
 }
 
 func (a *App) Run(addr string, wantsToWriteData bool) {
@@ -71,5 +80,4 @@ func (a *App) Run(addr string, wantsToWriteData bool) {
 	}
 
 	log.Fatal(http.ListenAndServe(addr, a.Router))
-
 }
