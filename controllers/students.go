@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -49,17 +48,3 @@ func (cfg *Config) TestHandler(w http.ResponseWriter, r *http.Request) {
 // 	}
 // 	respondWithJSON(w, http.StatusCreated, s)
 // }
-
-func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	fmt.Println(payload)
-	response, _ := json.Marshal(payload)
-	// fmt.Println(response)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(response)
-}
-
-func RespondWithError(w http.ResponseWriter, code int, message string) {
-	RespondWithJSON(w, code, map[string]string{"error": message})
-}
