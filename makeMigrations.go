@@ -10,6 +10,7 @@ var createTokenTable = `
 	CREATE TABLE token (
 		id VARCHAR(512) NOT NULL,
 		username VARCHAR(32) NOT NULL,
+		role VARCHAR(32) NOT NULL,
 		issue_at DATETIME NOT NULL,
 		expired_at DATETIME NOT NULL,
 		PRIMARY KEY(id)
@@ -21,12 +22,13 @@ var createTokenTable = `
 // ****************User login function*******************************
 var loginUserFunc = `
 	CREATE FUNCTION login_user ( username VARCHAR(7) , user_password VARCHAR(512) )
-	RETURNS int DETERMINISTIC
+	RETURNS VARCHAR(16) DETERMINISTIC
 
 	BEGIN
 
 		DECLARE user_hashed_password VARCHAR(512);
 		DECLARE LOGIN_STATUS int DEFAULT 0;
+		DECLARE RETURN_VALUE VARCHAR(16) DEFAULT "FAIL";
 
 		SET user_hashed_password := MD5(user_password);
 
@@ -38,9 +40,14 @@ var loginUserFunc = `
 			SELECT count(*) INTO LOGIN_STATUS
 			FROM professor 
 			WHERE professor.professor_no=username AND professor.password=user_hashed_password;
+			IF LOGIN_STATUS > 0 THEN
+				SET RETURN_VALUE = "PROFESSOR";
+			END IF;
+		ELSEIF LOGIN_STATUS > 0 THEN
+			SET RETURN_VALUE = "STUDENT";
 		END IF;
 
-		RETURN LOGIN_STATUS;
+		RETURN RETURN_VALUE;
 	END;
 `
 

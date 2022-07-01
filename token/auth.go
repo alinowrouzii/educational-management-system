@@ -18,6 +18,7 @@ type Payload struct {
 	Username  string    `json:"username"`
 	IssuedAt  time.Time `json:"issue_at"`
 	ExpiredAt time.Time `json:"expired_at"`
+	Role      string    `json:"role"`
 }
 
 // Maker is an interface for managing tokens
@@ -38,7 +39,7 @@ type JWTMaker struct {
 	DB        *sql.DB
 }
 
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
+func NewPayload(username, role string, duration time.Duration) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -47,15 +48,16 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 	payload := &Payload{
 		ID:        tokenID,
 		Username:  username,
+		Role:      role,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}
 	return payload, nil
 }
 
-func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (*Payload, string, error) {
+func (maker *JWTMaker) CreateToken(username, role string, duration time.Duration) (*Payload, string, error) {
 
-	payload, err := NewPayload(username, duration)
+	payload, err := NewPayload(username, role, duration)
 	if err != nil {
 		return nil, "", err
 	}

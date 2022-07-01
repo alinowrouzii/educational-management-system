@@ -9,7 +9,7 @@ import (
 	"github.com/alinowrouzii/educational-management-system/token"
 )
 
-var insertNewToken = "INSERT into token (id, username, issue_at, expired_at) VALUES (?, ?, ?, ?)"
+var insertNewToken = "INSERT into token (id, username, role, issue_at, expired_at) VALUES (?, ?, ?, ?, ?)"
 var loginUser = "SELECT login_user(?, ?)"
 var changeUserPassword = `SELECT change_student_password(?, ?, ?) as shit`
 
@@ -27,27 +27,31 @@ type UserLogin struct {
 func (u *UserLogin) Login(jwt *token.JWTMaker, db *sql.DB) (map[string]interface{}, error) {
 
 	fmt.Println("here is user", u)
-	checkLoginSuccessfull := false
-	err := db.QueryRow(loginUser, u.Username, u.Password).Scan(&checkLoginSuccessfull)
+	checkLoginStatus := "FAIL"
+	// LOGINUser returns three different value. One of that value is "FAIL"
+	// means username&password does not match. Another One is "STUDENT" means username&password is matched
+	// and type of user is student. Third one is like previous with the different that value is "PROFESSOR"
+	err := db.QueryRow(loginUser, u.Username, u.Password).Scan(&checkLoginStatus)
 
 	if err != nil {
 		fmt.Println("Error after login ", err)
+		return nil, err
 	}
 
-	if !checkLoginSuccessfull {
+	if checkLoginStatus == "FAIL" {
 		return nil, errors.New("There is no user with provided credentials")
 	}
-
 	// elsewhere create new token
 
+	userRole := checkLoginStatus
 	// 10000 seconds for expiration time
 	var d time.Duration = 10000000000000
-	payload, token, err := jwt.CreateToken(u.Username, d)
+	payload, token, err := jwt.CreateToken(u.Username, userRole, d)
 	res := map[string]interface{}{
 		"payload": payload,
 		"token":   token,
 	}
-	db.QueryRow(insertNewToken, payload.ID, payload.Username, payload.IssuedAt, payload.ExpiredAt)
+	db.QueryRow(insertNewToken, payload.ID, payload.Username, payload.Role, payload.IssuedAt, payload.ExpiredAt)
 	return res, err
 }
 
