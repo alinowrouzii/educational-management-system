@@ -26,3 +26,9 @@ func (u *UserLogin) Login(jwt *token.JWTMaker, db *sql.DB) (map[string]interface
 	db.QueryRow(insertNewToken, payload.ID, payload.Username, payload.IssuedAt, payload.ExpiredAt)
 	return res, err
 }
+
+func Logout(jwt *token.JWTMaker, token string) (map[string]interface{}, error) {
+	res, err := jwt.RevokeToken(token)
+
+	return res, err
+}

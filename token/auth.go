@@ -10,7 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
-var checkTokenIsValid = `SELECT id, username, issue_at, expired_at FROM token WHERE token.id=?`
+var checkTokenIsValid = `SELECT COUNT(*) FROM token WHERE token.id=?`
+var revokeToken = `DELETE FROM token WHERE token.id=?`
 
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
@@ -96,15 +97,61 @@ func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	}
 
 	// check token in database with sql function
+	exists := false
+
 	rows := maker.DB.QueryRow(checkTokenIsValid, payload.ID)
-	err = rows.Scan(&payload.ID, &payload.Username, &payload.IssuedAt, &payload.ExpiredAt)
+	err = rows.Scan(&exists)
+
+	fmt.Println("shittttttt ", err, exists, " jj")
+	if err != nil || !exists {
+		return nil, errors.New("token not found!!")
+	}
+	return payload, nil
+}
+
+func (maker *JWTMaker) RevokeToken(token string) (map[string]interface{}, error) {
+	// fmt.Println("token is:", token)
+	keyFunc := func(token *jwt.Token) (interface{}, error) {
+		_, ok := token.Method.(*jwt.SigningMethodHMAC)
+		if !ok {
+			return nil, ErrInvalidToken
+		}
+		return []byte(maker.secretKey), nil
+	}
+
+	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
+	if err != nil {
+		verr, ok := err.(*jwt.ValidationError)
+		if ok && errors.Is(verr.Inner, ErrExpiredToken) {
+			return nil, ErrExpiredToken
+		}
+		return nil, ErrInvalidToken
+	}
+
+	payload, ok := jwtToken.Claims.(*Payload)
+	if !ok {
+		return nil, ErrInvalidToken
+	}
+
+	// check token in database with sql function
+	res, err := maker.DB.Exec(revokeToken, payload.ID)
+	if err == nil {
+		count := int64(0)
+		count, err = res.RowsAffected()
+		if err == nil {
+			fmt.Println("here is count", count)
+			if count == 0 {
+				return nil, ErrExpiredToken
+			}
+		}
+	}
 
 	fmt.Println("shittttttt ", err, " jj")
 	if err != nil {
 		return nil, errors.New("token not found!!")
 	}
 
-	return payload, nil
+	return map[string]interface{}{"result": "token revoked successfully!"}, nil
 }
 
 func NewJWTMaker(secretKey string, db *sql.DB) (*JWTMaker, error) {
