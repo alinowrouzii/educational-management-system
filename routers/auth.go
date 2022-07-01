@@ -12,4 +12,6 @@ func InitAuthRouter(r *mux.Router, cfg *controllers.Config) {
 
 	r.PathPrefix("/auth").Subrouter().HandleFunc("/login", cfg.LoginHandler).Methods("POST")
 	r.PathPrefix("/auth").Subrouter().HandleFunc("/logout", cfg.LogoutHandler).Methods("POST")
+	r.PathPrefix("/auth").Subrouter().HandleFunc("/changePassword", cfg.ChangePasswordHandler).Methods("PATCH")
+
 }

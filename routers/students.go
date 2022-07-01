@@ -15,5 +15,4 @@ func InitStudentRouter(r *mux.Router, cfg *controllers.Config) {
 	r.PathPrefix("/student").Subrouter().Handle("/test", middleware.TokenMiddleware(http.HandlerFunc(cfg.TestHandler), cfg.JWT)).Methods("GET")
 	// r.PathPrefix("/student").Subrouter().HandleFunc("/", cfg.CreateStudentHandler).Methods("POST")
 	// r.PathPrefix("/student").Subrouter().HandleFunc("/{studentName}", cfg.GetStudentHandler).Methods("GET")
-	r.PathPrefix("/student").Subrouter().HandleFunc("/changePassword", cfg.ChangeStudentPasswordHandler).Methods("PATCH")
 }

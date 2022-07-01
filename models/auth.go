@@ -12,6 +12,12 @@ import (
 var insertNewToken = "INSERT into token (id, username, issue_at, expired_at) VALUES (?, ?, ?, ?)"
 var loginUser = "SELECT login_user(?, ?)"
 
+type UserChangePassword struct {
+	Username    string `json:"username" validate:"required"`
+	Password    string `json:"password" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required"`
+}
+
 type UserLogin struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
@@ -48,4 +54,17 @@ func Logout(jwt *token.JWTMaker, token string) (map[string]interface{}, error) {
 	res, err := jwt.RevokeToken(token)
 
 	return res, err
+}
+
+func (s *UserChangePassword) ChangePassword(db *sql.DB) error {
+	rowAffected := 0
+	// err := db.QueryRow(changeStudentPassword).Scan(&rowAffected)
+	err := db.QueryRow(changeStudentPassword, s.Username, s.Password, s.NewPassword).Scan(&rowAffected)
+
+	fmt.Println("function cal resssss", err, rowAffected)
+	if rowAffected == 0 {
+		return errors.New("No student found with provided credentials!")
+	}
+
+	return err
 }

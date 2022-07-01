@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/alinowrouzii/educational-management-system/models"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -67,27 +66,6 @@ func (cfg *Config) TestHandler(w http.ResponseWriter, _ *http.Request) {
 
 // 	respondWithJSON(w, http.StatusOK, student)
 // }
-
-func (cfg *Config) ChangeStudentPasswordHandler(w http.ResponseWriter, r *http.Request) {
-	var s models.Student
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&s); err != nil {
-		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
-		return
-	}
-	if err := Validator.Struct(s); err != nil {
-		RespondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	defer r.Body.Close()
-
-	if err := s.ChangeStudentPassword(cfg.DB); err != nil {
-		RespondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	RespondWithJSON(w, http.StatusCreated, s)
-}
 
 func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	fmt.Println(payload)

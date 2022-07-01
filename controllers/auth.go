@@ -8,6 +8,8 @@ import (
 	"github.com/alinowrouzii/educational-management-system/models"
 )
 
+var changeUserPassword = `SELECT change_student_password(?, ?, ?) as shit`
+
 func (cfg *Config) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	var user models.UserLogin
@@ -58,4 +60,25 @@ func (cfg *Config) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RespondWithJSON(w, http.StatusCreated, res)
+}
+
+func (cfg *Config) ChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
+	var u models.UserChangePassword
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&u); err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	if err := Validator.Struct(u); err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	defer r.Body.Close()
+
+	if err := u.ChangePassword(cfg.DB); err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	RespondWithJSON(w, http.StatusCreated, u)
 }
