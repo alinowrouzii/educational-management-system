@@ -1,47 +1,62 @@
 package models
 
-// var createStudent = "INSERT INTO students (name, last_name) VALUES ($1, $2) returning name"
-// var getStudentByName = "SELECT name, last_name FROM students WHERE name=$1"
-// var updateStudentNameByName = "UPDATE students SET name=$1 WHERE name=$2"
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+)
 
 type Student struct {
-	StudentNO   string `json:"student_no" validate:"required"`
-	Password    string `json:"password" validate:"required"`
-	NewPassword string `json:"new_password" validate:"required"`
+	StudentNO  string `json:"student_no"`
+	FullNameFA string `json:"full_name_fa"`
+	FullNameEN string `json:"full_name_en"`
+	FatherName string `json:"father_name"`
+	BirthDate  string `json:"birth_date"`
+	Mobile     string `json:"mobile"`
+	Major      string `json:"major"`
+	Email      string `json:"email"`
 }
 
-// func (s *Student) CreateStudent(db *sql.DB) error {
-// 	fmt.Println(s.Name)
-// 	err := db.QueryRow(createStudent, *s.Name, *s.LastName).Scan(s.Name)
+var getCourseStudents = `
+	SELECT student.student_no, full_name_fa, full_name_en, father_name, birth_date, mobile, major, email
+		FROM student, course_takes, course
+		WHERE student.student_no=course_takes.student_no 
+		AND course_takes.course_id=course.course_id
+		AND course.professor_no=?
+		AND course.course_id=?
+`
 
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+func GetCourseStudents(db *sql.DB, username, courseID string) ([]Student, error) {
 
-// func (s *Student) GetStudentByName(db *sql.DB) error {
-// 	fmt.Println(*s.Name)
-// 	return db.QueryRow(getStudentByName, s.Name).Scan(&s.student_no, &s.LastName)
-// }
+	rows, err := db.Query(getCourseStudents, username, courseID)
 
-// func (s *Student) UpdateStudentNameByName(db *sql.DB, newPassword string) error {
-// 	res, err :=
-// 		db.Exec(updateStudentNameByName, *s.student_no)
+	if err != nil {
+		fmt.Println("error occured")
+		fmt.Println(err)
+		return nil, errors.New("some error occured!")
+	}
+	defer rows.Close()
+	students := []Student{}
 
-// 	fmt.Println()
-// 	return err
-// }
+	for rows.Next() {
+		var student Student
+		if err := rows.Scan(
+			&student.StudentNO,
+			&student.FullNameFA,
+			&student.FullNameEN,
+			&student.FatherName,
+			&student.BirthDate,
+			&student.Mobile,
+			&student.Major,
+			&student.Email,
+		); err != nil {
+			return students, err
+		}
 
-// func (s *Student) ChangeStudentPassword(db *sql.DB) error {
-// 	rowAffected := 0
-// 	// err := db.QueryRow(changeStudentPassword).Scan(&rowAffected)
-// 	err := db.QueryRow(changeStudentPassword, s.StudentNO, s.Password, s.NewPassword).Scan(&rowAffected)
-
-// 	fmt.Println("function cal resssss", err, rowAffected)
-// 	if rowAffected == 0 {
-// 		return errors.New("No student found with provided credentials!")
-// 	}
-
-// 	return err
-// }
+		students = append(students, student)
+	}
+	if err = rows.Err(); err != nil {
+		return students, err
+	}
+	return students, nil
+}
