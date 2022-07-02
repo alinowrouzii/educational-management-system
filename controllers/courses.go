@@ -102,7 +102,7 @@ func (cfg *Config) CreateCourseExamHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	RespondWithJSON(w, http.StatusCreated, user)
+	RespondWithJSON(w, http.StatusCreated, exam)
 }
 
 func (cfg *Config) AddExamQuestionHandler(w http.ResponseWriter, r *http.Request) {
@@ -133,5 +133,5 @@ func (cfg *Config) AddExamQuestionHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	RespondWithJSON(w, http.StatusCreated, user)
+	RespondWithJSON(w, http.StatusCreated, question)
 }
