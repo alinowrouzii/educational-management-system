@@ -225,6 +225,44 @@ var createExam = `
 `
 var dropExam = `DROP TABLE exam`
 
+var createExamFunction = `
+	CREATE FUNCTION create_exam (
+		professor_no CHAR(5), 
+		exam_name VARCHAR(32), 
+		start_date DATETIME, 
+		end_date DATETIME, 
+		duration INT, 
+		course_id CHAR(8)
+	)
+	RETURNS VARCHAR(32) DETERMINISTIC
+	BEGIN
+		DECLARE COURSE_FOUND int DEFAULT 0;
+		DECLARE RETURN_VALUE VARCHAR(32) DEFAULT "FAIL";
+		DECLARE ERROR_MESSAGE varchar(128);
+
+		SELECT COUNT(*) INTO COURSE_FOUND
+		FROM course
+		WHERE course.course_id=course_id AND course.professor_no=professor_no;
+
+		IF COURSE_FOUND=0 THEN
+			set ERROR_MESSAGE = "course not found for professor";
+			signal sqlstate '45000' set message_text = ERROR_MESSAGE;
+		ELSE
+			INSERT INTO exam (exam_name, start_date, end_date, duration, course_id) VALUES (
+				exam_name,
+				start_date,
+				end_date,
+				duration,
+				course_id
+			);
+			SET RETURN_VALUE="SUCCESS";
+		END IF;
+		
+		RETURN RETURN_VALUE;
+	END;
+
+`
+
 // ***************END of exam question***********
 
 var createExamQuestion = `
@@ -353,6 +391,10 @@ var execs = []struct {
 	},
 	{
 		stmt:       createExamAnswer,
+		shouldFail: false,
+	},
+	{
+		stmt:       createExamFunction,
 		shouldFail: false,
 	},
 	// {

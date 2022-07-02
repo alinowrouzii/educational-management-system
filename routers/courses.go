@@ -19,4 +19,18 @@ func InitCoursesRouter(r *mux.Router, cfg *controllers.Config) {
 		middleware.TokenMiddleware,
 		middleware.ProfessorRoleMiddleware,
 	)).Methods("GET")
+
+	r.PathPrefix("/courses").Subrouter().Handle("/{course_id}/exam_hw/", middleware.ChainMiddleware(
+		http.HandlerFunc(cfg.GetCourseHWExamHandler),
+		cfg.JWT,
+		middleware.TokenMiddleware,
+		middleware.ProfessorRoleMiddleware,
+	)).Methods("GET")
+
+	r.PathPrefix("/courses").Subrouter().Handle("/exam/", middleware.ChainMiddleware(
+		http.HandlerFunc(cfg.CreateCourseExamHandler),
+		cfg.JWT,
+		middleware.TokenMiddleware,
+		middleware.ProfessorRoleMiddleware,
+	)).Methods("POST")
 }
