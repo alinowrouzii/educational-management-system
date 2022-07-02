@@ -33,4 +33,11 @@ func InitCoursesRouter(r *mux.Router, cfg *controllers.Config) {
 		middleware.TokenMiddleware,
 		middleware.ProfessorRoleMiddleware,
 	)).Methods("POST")
+
+	r.PathPrefix("/courses").Subrouter().Handle("/exam/question/", middleware.ChainMiddleware(
+		http.HandlerFunc(cfg.AddExamQuestionHandler),
+		cfg.JWT,
+		middleware.TokenMiddleware,
+		middleware.ProfessorRoleMiddleware,
+	)).Methods("POST")
 }

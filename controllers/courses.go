@@ -104,3 +104,34 @@ func (cfg *Config) CreateCourseExamHandler(w http.ResponseWriter, r *http.Reques
 
 	RespondWithJSON(w, http.StatusCreated, user)
 }
+
+func (cfg *Config) AddExamQuestionHandler(w http.ResponseWriter, r *http.Request) {
+
+	var question models.ExamQuestion
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&question); err != nil {
+		fmt.Println(err)
+		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	if err := Validator.Struct(question); err != nil {
+		RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	defer r.Body.Close()
+
+	user := r.Context().Value("payload")
+	fmt.Println("==========")
+	token := user.(*token.Payload)
+	username := token.Username
+	fmt.Println(username)
+
+	err := question.AddExamQuestion(cfg.DB, username)
+
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusCreated, user)
+}

@@ -8,17 +8,26 @@ import (
 )
 
 type Exam struct {
-	ExamID    string    `json:"exam_id"`
-	ExamName  string    `json:"exam_name"  validate:"required"`
-	StartDate time.Time `json:"start_date" validate:"required"`
-	EndDate   time.Time `json:"end_date"   validate:"required"`
-	Duration  int64     `json:"duration"   validate:"required"`
-	CourseID  string    `json:"course_id"  validate:"required"`
+	ExamID        string         `json:"exam_id"`
+	ExamName      string         `json:"exam_name"  validate:"required"`
+	StartDate     time.Time      `json:"start_date" validate:"required"`
+	EndDate       time.Time      `json:"end_date"   validate:"required"`
+	Duration      int64          `json:"duration"   validate:"required"`
+	CourseID      string         `json:"course_id"  validate:"required"`
+	ExamQuestions []ExamQuestion `json:"questions"`
 }
 
-// type ExamQuestion {
-
-// }
+type ExamQuestion struct {
+	QuestionID          string `json:"question_id"`
+	QuestionDescription string `json:"question_description"  validate:"required"`
+	FirstChoice         string `json:"first_choice"  validate:"required"`
+	SecondChoice        string `json:"second_choice"  validate:"required"`
+	ThirdChoice         string `json:"third_choice"  validate:"required"`
+	FourthChoice        string `json:"fourth_choice"  validate:"required"`
+	Score               int64  `json:"score"  validate:"required"`
+	CorrectAnswer       string `json:"correct_answer"  validate:"required"`
+	ExamID              string `json:"exam_id"  validate:"required"`
+}
 
 var getCourseExam = `
 	SELECT exam_id, exam_name, start_date, end_date, duration, exam.course_id
@@ -28,6 +37,8 @@ var getCourseExam = `
 	AND course.professor_no=?
 `
 var createCourseExam = `SELECT create_exam(?, ?, ?, ?, ?, ?)`
+
+var addExamQuestion = "SELECT create_exam_question(?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 func GetCourseExams(db *sql.DB, professorNO, courseID string) ([]Exam, error) {
 
@@ -77,4 +88,33 @@ func (exam *Exam) CreateCourseExam(db *sql.DB, professorNO string) error {
 		return errors.New("Some error occured")
 	}
 	return nil
+}
+
+func (question *ExamQuestion) AddExamQuestion(db *sql.DB, professorNO string) error {
+
+	createStatus := "FAIL"
+	err := db.QueryRow(addExamQuestion,
+		professorNO,
+		question.QuestionDescription,
+		question.FirstChoice,
+		question.SecondChoice,
+		question.ThirdChoice,
+		question.FourthChoice,
+		question.Score,
+		question.CorrectAnswer,
+		question.ExamID,
+	).Scan(&createStatus)
+
+	if err != nil {
+		fmt.Println("error occured")
+		fmt.Println(err)
+		return err
+	}
+
+	if createStatus != "SUCCESS" {
+		return errors.New("Some error occured")
+	}
+
+	return nil
+
 }

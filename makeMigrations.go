@@ -210,7 +210,7 @@ var createCourseTakes = `
 `
 var dropCourseTakes = `DROP YABLE course_takes`
 
-// ***************Exam question TABLE***********
+// ***************Exam TABLE***********
 var createExam = `
 	CREATE TABLE exam(
 		exam_id INT AUTO_INCREMENT,
@@ -260,27 +260,73 @@ var createExamFunction = `
 		
 		RETURN RETURN_VALUE;
 	END;
+`
 
+// ***************END of exam TABLE***********
+
+// ***************exam question***********
+var createExamQuestion = `
+CREATE TABLE exam_question (
+	question_id INT AUTO_INCREMENT,
+	question_description varchar(512) NOT NULL,
+	first_choice  VARCHAR(512) NOT NULL,
+	second_choice  VARCHAR(512) NOT NULL,
+	third_choice VARCHAR(512) NOT NULL,
+	fourth_choice VARCHAR(512) NOT NULL,
+	score INT NOT NULL,
+	correct_answer ENUM('A', 'B', 'C', 'D'),
+	exam_id INT NOT NULL,
+	PRIMARY KEY (question_id),
+	FOREIGN KEY (exam_id) REFERENCES exam(exam_id)
+)
+`
+var dropExamQuestion = `DROP TABLE exam_question`
+
+var createExamQuestionFunction = `
+	CREATE FUNCTION create_exam_question (
+		professor_no VARCHAR(5),
+		question_description varchar(512),
+		first_choice  VARCHAR(512),
+		second_choice  VARCHAR(512),
+		third_choice VARCHAR(512),
+		fourth_choice VARCHAR(512),
+		score INT,
+		correct_answer ENUM('A', 'B', 'C', 'D'),
+		exam_id INT
+	)
+	RETURNS VARCHAR(32) DETERMINISTIC
+	BEGIN
+		DECLARE EXAM_FOUND int DEFAULT 0;
+		DECLARE RETURN_VALUE VARCHAR(32) DEFAULT "FAIL";
+		DECLARE ERROR_MESSAGE varchar(128);
+
+		SELECT COUNT(*) INTO EXAM_FOUND
+		FROM exam, course
+		WHERE exam.exam_id = exam_id 
+			AND exam.course_id=course.course_id 
+			AND course.professor_no=professor_no;
+
+		IF EXAM_FOUND=0 THEN
+			set ERROR_MESSAGE = "exam not found for professor";
+			signal sqlstate '45000' set message_text = ERROR_MESSAGE;
+		ELSE
+			INSERT INTO exam_question (question_description, first_choice, second_choice, third_choice, fourth_choice, score, correct_answer, exam_id) VALUES (
+				question_description,
+				first_choice,
+				second_choice,
+				third_choice,
+				fourth_choice,
+				score,
+				correct_answer,
+				exam_id
+			);
+			SET RETURN_VALUE="SUCCESS";
+		END IF;
+		RETURN RETURN_VALUE;
+	END;
 `
 
 // ***************END of exam question***********
-
-var createExamQuestion = `
-	CREATE TABLE exam_question (
-		question_id INT AUTO_INCREMENT,
-		question_description varchar(512) NOT NULL,
-		first_choice  VARCHAR(512) NOT NULL,
-		second_choice  VARCHAR(512) NOT NULL,
-		third_choice VARCHAR(512) NOT NULL,
-		fourth_choice VARCHAR(512) NOT NULL,
-		score INT NOT NULL,
-		correct_answer ENUM('A', 'B', 'C', 'D'),
-		exam_id INT NOT NULL,
-		PRIMARY KEY (question_id),
-		FOREIGN KEY (exam_id) REFERENCES exam(exam_id)
-	)
-`
-var dropExamQuestion = `DROP TABLE exam_question`
 
 // ***************ExamAsnwer TABLE*********************
 var createExamAnswer = `
@@ -293,7 +339,6 @@ CREATE TABLE exam_answer (
 	FOREIGN KEY(student_no) REFERENCES student(student_no),
 	FOREIGN KEY(exam_id) REFERENCES exam(exam_id)
 )
-
 `
 
 // ***************End of Exam TABLE**************
@@ -387,6 +432,10 @@ var execs = []struct {
 	},
 	{
 		stmt:       createExamQuestion,
+		shouldFail: false,
+	},
+	{
+		stmt:       createExamQuestionFunction,
 		shouldFail: false,
 	},
 	{
