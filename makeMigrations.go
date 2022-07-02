@@ -395,12 +395,14 @@ BEGIN
 	WHERE 
 		exam_answer.question_id=exam_question.question_id
 		AND exam_question.exam_id=exam_id
+		AND exam_question.exam_id=exam.exam_id
 		AND exam.course_id=course_takes.course_id
 		AND course_takes.student_no=student_no;
 
 	RETURN score;
 END;
 `
+var dropGetStudentExamScoreFunc = `DROP FUNCTION get_student_exam_score`
 
 // ***************End of Exam TABLE**************
 // var createqUESTIONAnswer = `
