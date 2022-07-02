@@ -354,7 +354,7 @@ BEGIN
 			ELSE 0 
 		END
 	) INTO score
-	FROM exam_answer, exam_question, course_takes
+	FROM exam_answer, exam_question, exam, course_takes
 	WHERE 
 		exam_answer.exam_id=exam_id
 		AND exam_answer.exam_id=exam_question.exam_id
