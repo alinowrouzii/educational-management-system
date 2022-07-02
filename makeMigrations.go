@@ -128,12 +128,6 @@ var createStudentChangePasswordFunc = `
 END;
 `
 
-// declare msg varchar(128);
-// 		if new.password < 0 then
-// 			set msg = concat('MyTriggerError: Trying to insert a negative value in trigger_test: ', cast(new.id as char));
-// 			signal sqlstate '45000' set message_text = msg;
-// 		end if;
-
 // ***************END of student TABLE*********************
 
 // ***************professor TABLE*******************************
@@ -216,107 +210,98 @@ var createCourseTakes = `
 `
 var dropCourseTakes = `DROP YABLE course_takes`
 
+// ***************Exam question TABLE***********
 var createExam = `
-	CREATE TABLE exam (
-		exam_id int AUTO_INCREMENT,
-		-- section_id
-		course_code int NOT NULL,
-		group_number VARCHAR(4) NOT NULL,
-		year CHAR(4) NOT NULL,
-		semester ENUM('FALL', 'SPRING'),
-		--        
-		name VARCHAR(20),
-		description VARCHAR(200),
-		start_date DATE NOT NULL,
-		exam_duration int UNSIGNED NOT NULL,
-		PRIMARY KEY(exam_id),
-		FOREIGN KEY(course_code, group_number, year, semester) REFERENCES section(course_code, group_number, year, semester)
+	CREATE TABLE exam(
+		exam_id INT AUTO_INCREMENT,
+		exam_name VARCHAR(32),
+		start_date DATETIME,
+		end_date DATETIME,
+		duration INT,
+		course_id CHAR(8),
+		PRIMARY KEY (exam_id),
+		FOREIGN KEY (course_id) REFERENCES course(course_id)
 	)
 `
 var dropExam = `DROP TABLE exam`
 
-var createTestQuestion = `
-	CREATE TABLE test_question(
-		question_id int AUTO_INCREMENT,
-		exam_id int NOT NULL,
-		question VARCHAR(200) NOT NULL,
+// ***************END of exam question***********
+
+var createExamQuestion = `
+	CREATE TABLE exam_question (
+		question_id INT AUTO_INCREMENT,
+		question_description varchar(512) NOT NULL,
+		first_choice  VARCHAR(512) NOT NULL,
+		second_choice  VARCHAR(512) NOT NULL,
+		third_choice VARCHAR(512) NOT NULL,
+		fourth_choice VARCHAR(512) NOT NULL,
+		score INT NOT NULL,
 		correct_answer ENUM('A', 'B', 'C', 'D'),
-		question_grade int UNSIGNED NOT NULL,
-		PRIMARY KEY(question_id),
-		FOREIGN KEY(exam_id) REFERENCES exam(exam_id)
+		exam_id INT NOT NULL,
+		PRIMARY KEY (question_id),
+		FOREIGN KEY (exam_id) REFERENCES exam(exam_id)
 	)
 `
-var dropTestQuestion = `DROP TABLE test_question`
+var dropExamQuestion = `DROP TABLE exam_question`
 
-var createShortQuestion = `
-	CREATE TABLE short_question(
-		question_id int,
-		exam_id int NOT NULL,
-		question VARCHAR(200) NOT NULL,
-		correct_answer VARCHAR(200) NOT NULL,
-		question_grade int UNSIGNED NOT NULL,
-		PRIMARY KEY(question_id),
-		FOREIGN KEY(exam_id) REFERENCES exam(exam_id)
-	)
-`
-var dropShortQuestion = `DROP TABLE short_question`
+// ***************ExamAsnwer TABLE*********************
+var createExamAnswer = `
+CREATE TABLE exam_answer (
+	question_id INT AUTO_INCREMENT,
+	user_answer ENUM('A', 'B', 'C', 'D') NOT NULL,
+	exam_id INT NOT NULL,
+	student_no CHAR(7) NOT NULL,
+	PRIMARY KEY(question_id),
+	FOREIGN KEY(student_no) REFERENCES student(student_no),
+	FOREIGN KEY(exam_id) REFERENCES exam(exam_id)
+)
 
-var createTestAsnwer = `
-	CREATE TABLE test_answer(
-		student_id CHAR(7),
-		test_question_id int,
-		selected_option ENUM('A', 'B', 'C', 'D'),
-		student_grade int DEFAULT 0,
-		PRIMARY KEY(student_id, test_question_id),
-		FOREIGN KEY(student_id) REFERENCES student(student_id),
-		FOREIGN KEY(test_question_id) REFERENCES test_question(question_id)
-	)
 `
-var dropTestAnswer = `DROP TABLE test_answer`
 
-var createShortAnswer = `
-	CREATE TABLE short_answer(
-		student_id CHAR(7),
-		short_question_id int,
-		answer VARCHAR(200),
-		student_grade int DEFAULT 0,
-		PRIMARY KEY(student_id, short_question_id),
-		FOREIGN KEY(student_id) REFERENCES student(student_id),
-		FOREIGN KEY(short_question_id) REFERENCES short_question(question_id)
-	)
-`
-var dropShortAnswer = `DROP TABLE short_answer`
+// ***************End of Exam TABLE**************
+// var createqUESTIONAnswer = `
+// 	CREATE TABLE exam_answer(
+// 		student_id CHAR(7),
+// 		short_question_id int,
+// 		answer VARCHAR(200),
+// 		student_grade int DEFAULT 0,
+// 		PRIMARY KEY(student_id, short_question_id),
+// 		FOREIGN KEY(student_id) REFERENCES student(student_id),
+// 		FOREIGN KEY(short_question_id) REFERENCES short_question(question_id)
+// 	)
+// `
+// var dropShortAnswer = `DROP TABLE short_answer`
 
-var createHomework = `
-	CREATE TABLE hw(
-		id int AUTO_INCREMENT,
-		hw_number int UNSIGNED,
-		-- section_id
-		course_code int NOT NULL,
-		group_number VARCHAR(4) NOT NULL,
-		year CHAR(4) NOT NULL,
-		semester ENUM('FALL', 'SPRING'),
-		--    
-		description VARCHAR(200) NOT NULL,
-		PRIMARY KEY(id),
-		FOREIGN KEY(course_code, group_number, year, semester) REFERENCES section(course_code, group_number, year, semester)
-	)
-`
-var dropHomework = `DROP TABLE hw`
+// var createHomework = `
+// 	CREATE TABLE hw(
+// 		id int AUTO_INCREMENT,
+// 		hw_number int UNSIGNED,
+// 		-- section_id
+// 		course_code int NOT NULL,
+// 		group_number VARCHAR(4) NOT NULL,
+// 		year CHAR(4) NOT NULL,
+// 		semester ENUM('FALL', 'SPRING'),
+// 		--
+// 		description VARCHAR(200) NOT NULL,
+// 		PRIMARY KEY(id),
+// 		FOREIGN KEY(course_code, group_number, year, semester) REFERENCES section(course_code, group_number, year, semester)
+// 	)
+// `
+// var dropHomework = `DROP TABLE hw`
 
-var createHomeworkParticipation = `
-	CREATE TABLE hw_participation(
-		student_id CHAR(7),
-		hw_id int,
-		date DATE not null,
-		grade int UNSIGNED DEFAULT 0,
-		file VARCHAR(400) NOT NULL,
-		PRIMARY KEY(student_id, hw_id),
-		FOREIGN KEY(student_id) REFERENCES student(student_id),
-		FOREIGN KEY(hw_id) REFERENCES hw(id)
-	)
-`
-var dropHomeworkParticipation = `DROP TABLE hw_participation`
+// var createHomeworkParticipation = `
+// 	CREATE TABLE hw_participation(
+// 		student_id CHAR(7),
+// 		hw_id int,
+// 		date DATE not null,
+// 		grade int UNSIGNED DEFAULT 0,
+// 		file VARCHAR(400) NOT NULL,
+// 		PRIMARY KEY(student_id, hw_id),
+// 		FOREIGN KEY(student_id) REFERENCES student(student_id),
+// 		FOREIGN KEY(hw_id) REFERENCES hw(id)
+// 	)
+// `
+// var dropHomeworkParticipation = `DROP TABLE hw_participation`
 
 var execs = []struct {
 	stmt       string
@@ -363,27 +348,11 @@ var execs = []struct {
 		shouldFail: false,
 	},
 	{
-		stmt:       createTestQuestion,
+		stmt:       createExamQuestion,
 		shouldFail: false,
 	},
 	{
-		stmt:       createShortQuestion,
-		shouldFail: false,
-	},
-	{
-		stmt:       createTestAsnwer,
-		shouldFail: false,
-	},
-	{
-		stmt:       createShortAnswer,
-		shouldFail: false,
-	},
-	{
-		stmt:       createHomework,
-		shouldFail: false,
-	},
-	{
-		stmt:       createHomeworkParticipation,
+		stmt:       createExamAnswer,
 		shouldFail: false,
 	},
 	// {

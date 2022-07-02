@@ -48,3 +48,7 @@ func (cfg *Config) GetCourseStudentHandler(w http.ResponseWriter, r *http.Reques
 
 	RespondWithJSON(w, http.StatusOK, students)
 }
+
+func (cfg *Config) GetCourseHWExamHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO
+}

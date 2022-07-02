@@ -17,7 +17,8 @@ func ChainMiddleware(f http.HandlerFunc, jwt *token.JWTMaker, m ...middleware) h
 	if len(m) == 0 {
 		return f
 	}
-	return m[0](ChainMiddleware(f, jwt, m[1:cap(m)]...), jwt)
+	currentMiddleWare := m[0]
+	return currentMiddleWare(ChainMiddleware(f, jwt, m[1:cap(m)]...), jwt)
 }
 
 func TokenMiddleware(next http.HandlerFunc, jwt *token.JWTMaker) http.HandlerFunc {
