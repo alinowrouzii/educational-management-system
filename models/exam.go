@@ -29,6 +29,13 @@ type ExamQuestion struct {
 	ExamID              string `json:"exam_id"  validate:"required"`
 }
 
+type ExamAnswer struct {
+	QuestionID string `json:"question_id"  validate:"required"`
+	// ExamID     string `json:"exam_id"      validate:"required"`
+	UserAnswer string `json:"user_answer"  validate:"required"`
+	StudentNO  string `json:"student_no"`
+}
+
 var getCourseExam = `
 	SELECT exam_id, exam_name, start_date, end_date, duration, exam.course_id
 	FROM exam, course
@@ -39,6 +46,9 @@ var getCourseExam = `
 var createCourseExam = `SELECT create_exam(?, ?, ?, ?, ?, ?)`
 
 var addExamQuestion = "SELECT create_exam_question(?, ?, ?, ?, ?, ?, ?, ?, ?)"
+var addExamAnswer = "SELECT submit_exam_answer(?, ?, ?)"
+
+var getExamScore = "SELECT get_student_exam_score(?, ?)"
 
 func GetCourseExams(db *sql.DB, professorNO, courseID string) ([]Exam, error) {
 
@@ -117,4 +127,35 @@ func (question *ExamQuestion) AddExamQuestion(db *sql.DB, professorNO string) er
 
 	return nil
 
+}
+
+func (answer *ExamAnswer) SubmitExamAnswer(db *sql.DB) error {
+
+	createStatus := "FAIL"
+	err := db.QueryRow(addExamAnswer, answer.StudentNO, answer.QuestionID, answer.UserAnswer).Scan(&createStatus)
+
+	if err != nil {
+		fmt.Println("error occured")
+		fmt.Println(err)
+		return err
+	}
+	if createStatus != "SUCCESS" {
+		return errors.New("Some error occured")
+	}
+
+	return nil
+}
+
+func GetStudentExamScore(db *sql.DB, studentNO, examID string) (int, error) {
+
+	examScore := 0
+	err := db.QueryRow(getExamScore, studentNO, examID).Scan(&examScore)
+
+	if err != nil {
+		fmt.Println("error occured")
+		fmt.Println(err)
+		return 0, err
+	}
+
+	return examScore, nil
 }

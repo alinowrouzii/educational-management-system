@@ -135,3 +135,60 @@ func (cfg *Config) AddExamQuestionHandler(w http.ResponseWriter, r *http.Request
 
 	RespondWithJSON(w, http.StatusCreated, question)
 }
+
+func (cfg *Config) SubmitExamAnswerHandler(w http.ResponseWriter, r *http.Request) {
+
+	var answer models.ExamAnswer
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&answer); err != nil {
+		fmt.Println(err)
+		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	if err := Validator.Struct(answer); err != nil {
+		RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	defer r.Body.Close()
+
+	user := r.Context().Value("payload")
+	fmt.Println("==========")
+	token := user.(*token.Payload)
+	username := token.Username
+	fmt.Println(username)
+
+	answer.StudentNO = username
+	err := answer.SubmitExamAnswer(cfg.DB)
+
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusCreated, answer)
+}
+
+func (cfg *Config) GetExamScoreHandler(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println(mux.Vars(r)["exam_id"])
+	examID := mux.Vars(r)["exam_id"]
+	if examID == "" {
+		RespondWithError(w, http.StatusInternalServerError, "exam_id is required!")
+		return
+	}
+
+	user := r.Context().Value("payload")
+	fmt.Println("==========")
+	token := user.(*token.Payload)
+	username := token.Username
+	fmt.Println(username)
+
+	score, err := models.GetStudentExamScore(cfg.DB, username, examID)
+
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusCreated, map[string]interface{}{"score": score})
+}

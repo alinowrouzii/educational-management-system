@@ -331,14 +331,51 @@ var createExamQuestionFunction = `
 // ***************ExamAsnwer TABLE*********************
 var createExamAnswer = `
 CREATE TABLE exam_answer (
-	question_id INT AUTO_INCREMENT,
+	question_id INT,
+	student_no CHAR(7),
 	user_answer ENUM('A', 'B', 'C', 'D') NOT NULL,
-	exam_id INT NOT NULL,
-	student_no CHAR(7) NOT NULL,
-	PRIMARY KEY(question_id),
+	score INT DEFAULT 0,
+	PRIMARY KEY(question_id, student_no),
 	FOREIGN KEY(student_no) REFERENCES student(student_no),
-	FOREIGN KEY(exam_id) REFERENCES exam(exam_id)
+	FOREIGN KEY(question_id) REFERENCES exam_question(question_id)
 )
+`
+
+// exam_id INT NOT NULL,
+
+var submitExamAnswer = `
+CREATE FUNCTION submit_exam_answer (
+	student_no VARCHAR(7),
+	question_id INT,
+	user_answer CHAR(1)
+)
+RETURNS VARCHAR(32) DETERMINISTIC
+BEGIN
+	DECLARE QUESTION_FOUND int DEFAULT 0;
+	DECLARE RETURN_VALUE VARCHAR(32) DEFAULT "FAIL";
+	DECLARE ERROR_MESSAGE varchar(128);
+
+	SELECT COUNT(*) INTO QUESTION_FOUND
+	FROM exam_question, exam, course_takes
+	WHERE 
+		exam_question.question_id = question_id 
+		AND exam_question.exam_id=exam.exam_id
+		AND exam.course_id=course_takes.course_id
+		AND course_takes.student_no=student_no;
+
+	IF QUESTION_FOUND=0 THEN
+		set ERROR_MESSAGE = "question not found for student";
+		signal sqlstate '45000' set message_text = ERROR_MESSAGE;
+	ELSE
+		INSERT INTO exam_answer (question_id, student_no, user_answer) VALUES (
+			question_id,
+			student_no,
+			user_answer
+		);
+		SET RETURN_VALUE="SUCCESS";
+	END IF;
+	RETURN RETURN_VALUE;
+END;
 `
 
 var getStudentExamScore = `
@@ -356,9 +393,8 @@ BEGIN
 	) INTO score
 	FROM exam_answer, exam_question, exam, course_takes
 	WHERE 
-		exam_answer.exam_id=exam_id
-		AND exam_answer.exam_id=exam_question.exam_id
-		AND exam_answer.exam_id=exam.exam_id
+		exam_answer.question_id=exam_question.question_id
+		AND exam_question.exam_id=exam_id
 		AND exam.course_id=course_takes.course_id
 		AND course_takes.student_no=student_no;
 
@@ -465,6 +501,10 @@ var execs = []struct {
 	},
 	{
 		stmt:       createExamAnswer,
+		shouldFail: false,
+	},
+	{
+		stmt:       submitExamAnswer,
 		shouldFail: false,
 	},
 	{

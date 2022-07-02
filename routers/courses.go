@@ -40,4 +40,16 @@ func InitCoursesRouter(r *mux.Router, cfg *controllers.Config) {
 		middleware.TokenMiddleware,
 		middleware.ProfessorRoleMiddleware,
 	)).Methods("POST")
+
+	r.PathPrefix("/courses").Subrouter().Handle("/exam/question/submit/", middleware.ChainMiddleware(
+		http.HandlerFunc(cfg.SubmitExamAnswerHandler),
+		cfg.JWT,
+		middleware.TokenMiddleware,
+	)).Methods("POST")
+
+	r.PathPrefix("/courses").Subrouter().Handle("/exam/{exam_id}/score/", middleware.ChainMiddleware(
+		http.HandlerFunc(cfg.GetExamScoreHandler),
+		cfg.JWT,
+		middleware.TokenMiddleware,
+	)).Methods("GET")
 }
