@@ -341,6 +341,31 @@ CREATE TABLE exam_answer (
 )
 `
 
+var getStudentExamScore = `
+CREATE FUNCTION get_student_exam_score (student_no VARCHAR(7), exam_id INT)
+RETURNS INT DETERMINISTIC
+BEGIN
+	DECLARE score int DEFAULT 0;
+
+	SELECT SUM(
+		CASE 
+			WHEN exam_answer.user_answer = exam_question.correct_answer
+			THEN exam_question.score 
+			ELSE 0 
+		END
+	) INTO score
+	FROM exam_answer, exam_question, course_takes
+	WHERE 
+		exam_answer.exam_id=exam_id
+		AND exam_answer.exam_id=exam_question.exam_id
+		AND exam_answer.exam_id=exam.exam_id
+		AND exam.course_id=course_takes.course_id
+		AND course_takes.student_no=student_no;
+
+	RETURN score;
+END;
+`
+
 // ***************End of Exam TABLE**************
 // var createqUESTIONAnswer = `
 // 	CREATE TABLE exam_answer(
@@ -444,6 +469,10 @@ var execs = []struct {
 	},
 	{
 		stmt:       createExamFunction,
+		shouldFail: false,
+	},
+	{
+		stmt:       getStudentExamScore,
 		shouldFail: false,
 	},
 	// {
