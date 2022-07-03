@@ -413,14 +413,27 @@ CREATE FUNCTION get_student_exam_score (student_no VARCHAR(7), exam_id INT)
 RETURNS INT DETERMINISTIC
 BEGIN
 	DECLARE score int DEFAULT 0;
+	DECLARE EXAM_IS_OVER INT DEFAULT 0;
+	DECLARE ERROR_MESSAGE VARCHAR(64);
 
-	SELECT SUM(
+	SELECT COUNT(*) INTO EXAM_IS_OVER
+	FROM exam
+	WHERE 
+		exam.exam_id=exam_id 
+		AND exam.end_date < NOW();
+
+	IF EXAM_IS_OVER=0 THEN
+		set ERROR_MESSAGE = "Exam is not over yet!";
+		signal sqlstate '45000' set message_text = ERROR_MESSAGE;
+	END IF;
+
+	SELECT COALESCE(SUM(
 		CASE 
 			WHEN exam_answer.user_answer = exam_question.correct_answer
 			THEN exam_question.score 
 			ELSE 0 
 		END
-	) INTO score
+	), -1) INTO score
 	FROM exam_answer, exam_question, exam, course_takes
 	WHERE 
 		exam_answer.question_id=exam_question.question_id
@@ -535,16 +548,20 @@ var execs = []struct {
 		stmt:       createExamAnswer,
 		shouldFail: false,
 	},
-	// {
-	// 	stmt:       dropSubmitExamAnswer,
-	// 	shouldFail: false,
-	// },
+	{
+		stmt:       dropSubmitExamAnswer,
+		shouldFail: false,
+	},
 	{
 		stmt:       submitExamAnswer,
 		shouldFail: false,
 	},
 	{
 		stmt:       createExamFunction,
+		shouldFail: false,
+	},
+	{
+		stmt:       dropGetStudentExamScoreFunc,
 		shouldFail: false,
 	},
 	{
