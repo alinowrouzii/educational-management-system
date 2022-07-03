@@ -354,6 +354,8 @@ BEGIN
 	DECLARE QUESTION_FOUND int DEFAULT 0;
 	DECLARE RETURN_VALUE VARCHAR(32) DEFAULT "FAIL";
 	DECLARE ERROR_MESSAGE varchar(128);
+	DECLARE EXAM_TIME_IS_NOT_OVER INT DEFAULT 1;
+	DECLARE EXAM_TIME_HAS_BEGUN INT DEFAULT 0;
 
 	SELECT COUNT(*) INTO QUESTION_FOUND
 	FROM exam_question, exam, course_takes
@@ -367,16 +369,44 @@ BEGIN
 		set ERROR_MESSAGE = "question not found for student";
 		signal sqlstate '45000' set message_text = ERROR_MESSAGE;
 	ELSE
+		SELECT COUNT(*) INTO EXAM_TIME_IS_NOT_OVER
+		FROM exam, exam_question
+		WHERE 
+			exam_question.question_id=question_id
+			AND exam_question.exam_id=exam.exam_id
+			AND exam.end_date > NOW();
+
+		IF EXAM_TIME_IS_NOT_OVER=0 THEN
+			set ERROR_MESSAGE = "exam time is over dude!";
+			signal sqlstate '45000' set message_text = ERROR_MESSAGE;
+		END IF;
+
+		SELECT COUNT(*) INTO EXAM_TIME_HAS_BEGUN
+		FROM exam, exam_question
+		WHERE 
+			exam_question.question_id=question_id
+			AND exam_question.exam_id=exam.exam_id
+			AND exam.start_date < NOW();
+
+		IF EXAM_TIME_HAS_BEGUN=0 THEN
+			set ERROR_MESSAGE = "exam has not begin yet dude!";
+			signal sqlstate '45000' set message_text = ERROR_MESSAGE;
+		END IF;
+
 		INSERT INTO exam_answer (question_id, student_no, user_answer) VALUES (
 			question_id,
 			student_no,
 			user_answer
 		);
 		SET RETURN_VALUE="SUCCESS";
+		
 	END IF;
 	RETURN RETURN_VALUE;
 END;
 `
+var dropSubmitExamAnswer = `DROP FUNCTION submit_exam_answer`
+
+//*****************************8
 
 var getStudentExamScore = `
 CREATE FUNCTION get_student_exam_score (student_no VARCHAR(7), exam_id INT)
@@ -505,6 +535,10 @@ var execs = []struct {
 		stmt:       createExamAnswer,
 		shouldFail: false,
 	},
+	// {
+	// 	stmt:       dropSubmitExamAnswer,
+	// 	shouldFail: false,
+	// },
 	{
 		stmt:       submitExamAnswer,
 		shouldFail: false,
